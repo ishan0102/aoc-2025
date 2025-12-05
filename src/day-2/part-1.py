@@ -1,3 +1,9 @@
+"""
+Advent of Code 2025 - Day 2
+https://adventofcode.com/2025/day/2
+
+Part 1: Brute force
+"""
 with open("input.txt", "r") as file:
     ranges = file.readline()
     ranges = ranges.split(",")

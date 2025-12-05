@@ -1,3 +1,9 @@
+"""
+Advent of Code 2025 - Day 1
+https://adventofcode.com/2025/day/1
+
+Part 2: Brute force
+"""
 with open("input.txt", "r") as file:
     lines = [line.strip() for line in file]
     lines = [(line[0], int(line[1:])) for line in lines]

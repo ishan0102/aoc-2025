@@ -1,3 +1,9 @@
+"""
+Advent of Code 2025 - Day 1
+https://adventofcode.com/2025/day/1
+
+Part 1: Clean modulo solution
+"""
 with open("input.txt", "r") as file:
     lines = file.readlines()
     lines = [line.strip() for line in lines]
