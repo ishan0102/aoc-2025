@@ -2,64 +2,45 @@
 Advent of Code 2025 - Day 8
 https://adventofcode.com/2025/day/8
 
-Part 1: Maintain adjacency lists with euclidean distances
+Part 1: Preprocess to compute pairwise distances, run simplified DSU
 """
-import copy
 import math
 
-from tqdm import tqdm
+CONNECTIONS = 1000
 
-def connect_min(boxes, circuits):
-    min_distance = float('inf')
-    min_keys = [-1, -1]
+def preprocess(boxes: list[tuple]) -> list[tuple]:
+    distances = []
     for i in range(len(boxes)):
-        for j in range(i, len(boxes)):
-            if i == j:
-                continue
-
-            if i in circuits.get(j, []):
-                continue
-
-            distance = math.dist(boxes[i], boxes[j])
-            if distance < min_distance:
-                min_distance = distance
-                min_keys[0] = i
-                min_keys[1] = j
-
-    i, j = min_keys
-    if i == -1 or j == -1:
-        return
-
-    circuits[i].append(j)
-    circuits[j].append(i)
-
-def count_circuits(circuits) -> int:
-    circuits = copy.deepcopy(circuits)
-    count = 0
-    seen = set()
-    for key, value in circuits.items():
-        if key in seen or len(value) == 0:
-            continue
-
-        count += 1
-        for v in value:
-            seen.add(v)
+        for j in range(i + 1, len(boxes)):
+            a, b = boxes[i], boxes[j]
+            distances.append((a, b, math.dist(a, b)))
     
-    return count
+    distances.sort(key=lambda x: x[2])
+    return distances[:CONNECTIONS]
 
-def get_result(circuits):
-    sorted_circuits = dict(sorted(circuits.items(), key=lambda x: len(x[1]), reverse=True))
-    seen = set()
-    top_3 = []
-    for key, value in sorted_circuits.items():
-        if key in seen:
-            continue
 
-        top_3.append(len(value) + 1)
-        for v in value:
-            seen.add(v)
+def add_to_sets(sets: list[set], a, b) -> None:
+    a_i, b_i = -1, -1
+    for i, s in enumerate(sets):
+        if a in s:
+            a_i = i
+        if b in s:
+            b_i = i
+    
+    if a_i == -1 and b_i == -1:
+        sets.append({a, b})
+    elif a_i == -1:
+        sets[b_i].add(a)
+    elif b_i == -1:
+        sets[a_i].add(b)
+    elif a_i != b_i:
+        if a_i > b_i:
+            a_set = sets.pop(a_i)
+            sets[b_i] |= a_set
+        else:
+            b_set = sets.pop(b_i)
+            sets[a_i] |= b_set
 
-    return top_3[0] * top_3[1] * top_3[2]
 
 def main():
     with open("input.txt", "r") as file:
@@ -67,11 +48,18 @@ def main():
         boxes = [box.split(",") for box in boxes]
         boxes = [tuple([int(i) for i in box]) for box in boxes]
 
-    circuits = {i: [] for i in range(len(boxes))}
-    for _ in tqdm(range(1001)):
-        connect_min(boxes, circuits)
+    distances = preprocess(boxes)
+    sets = []
+    for a, b, _ in distances:
+        add_to_sets(sets, a, b)
 
-    print(get_result(circuits))
+    total = 1
+    sizes = sorted((len(s) for s in sets), reverse=True)[:3]
+    for s in sizes:
+        total *= s
+        
+    print(total)
+
 
 if __name__ == "__main__":
     main()
